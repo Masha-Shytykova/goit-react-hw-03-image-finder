@@ -16,6 +16,7 @@ class App extends Component {
     status: 'idle',
     showModal: false,
     largeImageURL: '',
+    tags: '',
     totalHits: 0,
   };
 
@@ -27,13 +28,11 @@ class App extends Component {
     if (nextQuery !== prevQuery) {
       this.setState({ status: 'pending' });
       this.setState({ page: 1, hits: [] });
-      console.log(page);
       this.getImages({ nextQuery: nextQuery, page: 1 });
     }
 
     if (page !== prevState.page && page !== 1) {
       this.setState({ status: 'pending' });
-      console.log('load more click');
       this.getImages({ nextQuery: nextQuery, page: page });
     }
   }
@@ -45,6 +44,7 @@ class App extends Component {
           this.setState({ status: 'rejected' });
         }
         this.setState({ status: 'resolved', totalHits: data.totalHits });
+
         this.setState(prevState => ({
           hits: [...prevState.hits, ...data.hits],
         }));
@@ -68,8 +68,8 @@ class App extends Component {
     this.setState({ query });
   };
 
-  handleSetLargeImageURL = largeImageURL => {
-    this.setState({ largeImageURL });
+  handleSetLargeImageURL = ({ largeImageURL, tags }) => {
+    this.setState({ largeImageURL, tags });
   };
 
   toggleModal = () => {
@@ -77,8 +77,16 @@ class App extends Component {
   };
 
   render() {
-    const { status, error, hits, query, showModal, largeImageURL, totalHits } =
-      this.state;
+    const {
+      status,
+      error,
+      hits,
+      query,
+      showModal,
+      largeImageURL,
+      totalHits,
+      tags,
+    } = this.state;
 
     if (status === 'idle') {
       return <Searchbar onSubmit={this.handleFormSubmit} />;
@@ -111,14 +119,14 @@ class App extends Component {
             toggleModal={this.toggleModal}
             handleSetLargeImageURL={this.handleSetLargeImageURL}
           />
-          {hits.length >= 12 && hits.length < totalHits && (
+          {hits.length > 12 && hits.length < totalHits && (
             <Button onClick={this.handleLoadMore} />
           )}
           {hits.length === 0 && <h1>по запросу {query} ничего не найдено</h1>}
 
           {showModal && (
             <Modal onClose={this.toggleModal}>
-              <img src={largeImageURL} alt="" />
+              <img src={largeImageURL} alt={tags} />
             </Modal>
           )}
         </>
